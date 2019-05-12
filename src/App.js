@@ -1,18 +1,26 @@
 import React from 'react';
+import './App.css';
 import Login from './components/Login';
 import Dashboard from './components/Dashboard';
 import Register from './components/Register';
-import './App.css';
+import Error from './components/Error';
+import {BrowserRouter as Router, Switch, Route } from 'react-router-dom';
+
 
 function App() {
+  
   return (
-    <div className="App">
-      <header className="App-header">
-        {/* <Login></Login> */}
-        <Register></Register>
-        {/* <Dashboard></Dashboard> */}
-      </header>
-    </div>
+    <Router>
+      <div className="App">
+        <Switch>
+          {/* <Route path="/" exact component={Home}/> */}
+          <Route path="/Login" component={Login}/>
+          <Route path="/register" component={Register}/>
+          <Route path="/dashboard" component={Dashboard}/>
+          {/* <Route path="/error" component={Error}/> */}
+        </Switch>
+      </div>
+    </Router>
   );
 }
 
