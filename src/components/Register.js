@@ -39,6 +39,7 @@ class Register extends Component{
                 contact: this.state.contact,
                 email: this.state.email,
                 password: this.state.password,
+                confirmPassword: this.state.confirmPassword,
                 checkbox: this.state.checkbox
             })
         })
