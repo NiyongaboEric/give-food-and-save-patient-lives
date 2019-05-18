@@ -1,8 +1,11 @@
 import React, { Component } from 'react';
 
 class Dashboard extends Component{
+
+    // component before mount
+    
+
     render() {
-        // console.log('hey')
         return (
             <div className="Dashboard">
                 <p>dashboard</p>

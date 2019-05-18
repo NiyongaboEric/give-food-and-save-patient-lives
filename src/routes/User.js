@@ -1,12 +1,13 @@
 const express = require("express");
 const users = express.Router();
 const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
 
 //get model
 const User = require("../models/User");
 process.env.SECRET_KEY = "secret"
 
-//register user api
+//Regiter
 users.post('/register', (req, res) => {
     message = {};
     const userData = {
@@ -64,8 +65,90 @@ users.post('/register', (req, res) => {
         .catch(err => res.status(400).send(err))
 })
 
-users.get('/test', (request, response) => {
-    response.header({"Content-Type": "application/json"});
-    response.status(200).send({"data": 'works'});
+users.get('/dashboard', verifyToken, (req, res) => {
+    
+    console.log('dashboard', req.secretKey);
+    console.log('dashboard', req);
+    
+    jwt.verify(req.token, 'loginIsMyPrivateKey', (err, authData) => {
+        if(err){
+            console.log('outside');
+            return res.status(400).json({
+                "data": 'token expired'
+            });
+        } else {
+            console.log('inside');
+            return res.status(200).json({ 
+                "data": 'welcome on your dashboard',
+                authData
+            });
+        }
+    })
 })
+//LOGIN
+users.post('/login', (req, res, next) => {
+    let secretKey = "loginIsMyPrivateKey";    
+    User.findOne({email: req.body.email}, function (err, userInfo) {
+        // is input empty
+        if(req.body.email.length === 0 && req.body.password.length === 0){
+            res.header("Content-Type", "application/json; charset=UTF-8");
+            return res.status(400).send({data: "email and password can not be empty"});
+        }
+        // is password empty
+        if(req.body.password.length === 0){
+            res.header("Content-Type", "application/json; charset=UTF-8")
+            return res.status(400).send({data: "password can not be empty"});
+        }
+        // is email incorrect null  
+        if (!userInfo) {
+            res.header("Content-Type", "application/json; charset=UTF-8")
+            return res.status(400).send({data: "email is incorrect or empty"});
+        }
+        if(err){
+            next(err)
+        }        
+        else {
+            if (bcrypt.compareSync(req.body.password, userInfo.password)) {
+                // create jwt token
+                jwt.sign({ id: userInfo._id, email: userInfo.email }, secretKey, {expiresIn: '1h'}, (err, token) => {
+                    res.header("Content-Type", "application/json; charset=UTF-8");
+                    return res.status(200).json(
+                        {
+                            success: true,
+                            data: "authentication successful",
+                            secretKey,
+                            token
+                        }
+                    );
+                });
+            }else{
+                res.header("Content-Type", "application/json; charset=UTF-8")
+                return res.status(400).send({data: "password do not match with email given"});
+            }
+        }
+    })
+});
+
+
+function verifyToken(req, res, next) {
+    //Get auth header value
+    console.log(req.headers);
+    const bearerHeader = req.headers.authorization;
+    // check if bearer is undefined
+    if(typeof bearerHeader !== 'undefined') {
+        // Split at the space
+        const bearer = bearerHeader.split(' ');
+        // Get token from array
+        const bearerToken = bearer[1];
+        // set the token
+        req.token = bearerToken;
+        //next middleare
+        next();
+
+    } else {
+        //Auth Error
+        return res.status(401).json({data: "you must login"})
+    }
+}
+
 module.exports = users;

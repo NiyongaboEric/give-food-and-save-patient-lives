@@ -32,7 +32,7 @@ class Register extends Component{
             method: 'POST',
             headers: {
                 "Accept": "application/json",
-                'Content-Type': 'application/json'            
+                'Content-Type': 'application/json; charset=UTF-8'    
             },
             body: JSON.stringify({
                 fullName: this.state.fullName,
